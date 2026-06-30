@@ -1,63 +1,141 @@
-<div>
-  <form [formGroup]="quoteForm" (ngSubmit)="GetQuote()" >
+<div class="quote-container">
+  <!-- Header -->
+  <div class="quote-header">
+    <h1>Get Your Insurance Quote</h1>
+    <p class="subtitle">Fill in your details to get an instant quote</p>
+  </div>
 
-    <div class="mb-3">
-    <label>
-      Insurance Type:
-      <select  (change)="changeInsuranceType($event)" formControlName="insuranceType">
+  <!-- Form -->
+  <form [formGroup]="quoteForm" (ngSubmit)="GetQuote()" class="quote-form">
+
+    <!-- Insurance Type -->
+    <div class="form-group">
+      <label for="insuranceType" class="form-label">
+        <span class="required">*</span> Insurance Type
+      </label>
+      <select 
+        id="insuranceType"
+        class="form-control"
+        [class.is-invalid]="insuranceTypeCtrl.invalid && (insuranceTypeCtrl.dirty || insuranceTypeCtrl.touched)"
+        (change)="changeInsuranceType($event)" 
+        formControlName="insuranceType">
         <option value="" disabled>Choose your type of insurance</option>
         <option *ngFor="let type of details.insuranceTypes" [value]="type.type">{{type.description}}</option>
-     </select>
-    </label>
-    <div  class="error"  *ngIf="insuranceTypeCtrl.invalid && (insuranceTypeCtrl.dirty || insuranceTypeCtrl.touched)">
-      <div *ngIf="insuranceTypeCtrl.errors?.required">
-        Insurance type is required.
+      </select>
+      <div class="invalid-feedback" *ngIf="insuranceTypeCtrl.invalid && (insuranceTypeCtrl.dirty || insuranceTypeCtrl.touched)">
+        <div *ngIf="insuranceTypeCtrl.errors?.['required']">
+          <i class="icon-error"></i> Insurance type is required.
+        </div>
       </div>
     </div>
-  </div>
 
-  <div class="mb-3">
-    <label>
-      Date of Birth:
-      <input type="date" formControlName="dateOfBirth">
-    </label>
-    <div  class="error"  *ngIf="dateOfBirthCtrl.invalid && (dateOfBirthCtrl.dirty || dateOfBirthCtrl.touched)">
-      <div *ngIf="dateOfBirthCtrl.errors?.required">
-        Date of Birth is required.
+    <!-- Date of Birth -->
+    <div class="form-group">
+      <label for="dateOfBirth" class="form-label">
+        <span class="required">*</span> Date of Birth
+      </label>
+      <input 
+        id="dateOfBirth"
+        type="date" 
+        class="form-control"
+        [class.is-invalid]="dateOfBirthCtrl.invalid && (dateOfBirthCtrl.dirty || dateOfBirthCtrl.touched)"
+        formControlName="dateOfBirth"
+        (change)="onDateOfBirthChange()">
+      <div class="input-hint" [class.age-invalid]="!isAgeEligible()" *ngIf="dateOfBirthCtrl.valid && dateOfBirthCtrl.value">
+        Age: <strong>{{calculatedAge}} years old</strong>
+      </div>
+      <div class="invalid-feedback" *ngIf="dateOfBirthCtrl.invalid && (dateOfBirthCtrl.dirty || dateOfBirthCtrl.touched)">
+        <div *ngIf="dateOfBirthCtrl.errors?.['required']">
+          <i class="icon-error"></i> Date of Birth is required.
+        </div>
       </div>
     </div>
-  </div>  
-    <div class="mb-3">
-      <label>
-      Make:
-      <select  (change)="changeMake($event)" formControlName="make">
+
+    <!-- Make -->
+    <div class="form-group">
+      <label for="make" class="form-label">
+        <span class="required">*</span> Make
+      </label>
+      <select 
+        id="make"
+        class="form-control"
+        [class.is-invalid]="makeCtrl.invalid && (makeCtrl.dirty || makeCtrl.touched)"
+        (change)="changeMake($event)" 
+        formControlName="make">
         <option value="" disabled>Choose your make</option>
         <option *ngFor="let make of details.makes" [value]="make">{{make}}</option>
-     </select>
-    </label>
-    <div  class="error"  *ngIf="makeCtrl.invalid && (makeCtrl.dirty || makeCtrl.touched)">
-      <div *ngIf="makeCtrl.errors?.required">
-        Make is required.
+      </select>
+      <div class="invalid-feedback" *ngIf="makeCtrl.invalid && (makeCtrl.dirty || makeCtrl.touched)">
+        <div *ngIf="makeCtrl.errors?.['required']">
+          <i class="icon-error"></i> Make is required.
+        </div>
       </div>
     </div>
-  </div>
-  <div class="mb-3">
-    <label>
-      Model:
-      <select  (change)="changeModel($event)" formControlName="model">
+
+    <!-- Model -->
+    <div class="form-group">
+      <label for="model" class="form-label">
+        <span class="required">*</span> Model
+      </label>
+      <select 
+        id="model"
+        class="form-control"
+        [class.is-invalid]="modelCtrl.invalid && (modelCtrl.dirty || modelCtrl.touched)"
+        (change)="changeModel($event)" 
+        formControlName="model">
         <option value="" disabled>Choose your model</option>
         <option *ngFor="let model of Models" [value]="model">{{model}}</option>
-     </select>
-    </label>
-    <div class="error" *ngIf="modelCtrl.invalid && (modelCtrl.dirty || modelCtrl.touched)">
-      <div *ngIf="modelCtrl.errors?.required">
-        Model is required.
+      </select>
+      <div class="invalid-feedback" *ngIf="modelCtrl.invalid && (modelCtrl.dirty || modelCtrl.touched)">
+        <div *ngIf="modelCtrl.errors?.['required']">
+          <i class="icon-error"></i> Model is required.
+        </div>
       </div>
     </div>
-  </div>
-    <button type="submit"> Get Quote</button>
-    <!--decide when should be visible.  If GetQuote is no disabled, could do wait until clicked and on change of form data-->
-    <div class="error" [style.visibility]="quoteForm.valid || !touched ? 'hidden' : 'visible'">The form is not valid</div>
-    <div [style.visibility]="QuoteReceived ? 'visible' : 'hidden'">{{Quote}}</div>
+
+    <!-- Form Validation Error -->
+    <div class="alert alert-warning" [class.d-none]="quoteForm.valid || !touched">
+      <i class="icon-warning"></i>
+      <strong>Form Incomplete:</strong> Please fill in all required fields marked with <span class="required">*</span>
+    </div>
+
+    <!-- Age Validation Error from Backend -->
+    <div class="alert alert-danger alert-dismissible fade show" [class.d-none]="!ShowError" *ngIf="ShowError">
+      <i class="icon-error"></i>
+      <strong>Cannot Proceed:</strong> {{ErrorMessage}}
+      <button type="button" class="btn-close" (click)="dismissAgeError()"></button>
+    </div>
+
+    <!-- Success - Quote Display -->
+    <div class="alert alert-success alert-success-quote" [class.d-none]="!QuoteReceived" *ngIf="QuoteReceived">
+      <div class="quote-success-content">
+        <i class="icon-success"></i>
+        <div class="quote-details">
+          <h4>Your Quote</h4>
+          <p class="quote-amount"><strong>£{{Quote}}</strong></p>
+          <p class="quote-info">Your personalized insurance quote is ready!</p>
+          <button type="button" class="btn btn-secondary btn-sm" (click)="resetForm()">Get Another Quote</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Submit Button -->
+    <div class="button-group">
+      <button 
+        type="submit" 
+        class="btn btn-primary btn-lg"
+        [disabled]="quoteForm.invalid || isLoading">
+        <span *ngIf="!isLoading">Get Quote</span>
+        <span *ngIf="isLoading">
+          <span class="spinner-border spinner-border-sm me-2"></span> Loading...
+        </span>
+      </button>
+    </div>
   </form>
+
+  <!-- Age Eligibility Info -->
+  <div class="age-info-box">
+    <h5><i class="icon-info"></i> Age Requirements</h5>
+    <p>To qualify for an insurance quote, you must be between <strong>17 and 80 years old</strong>.</p>
+  </div>
 </div>
